@@ -65,7 +65,7 @@ function checkstart(){
         if(!powerOn){
             powerOn = true;
             powerlight.style.backgroundColor="red";
-            this.style.border = "2px solid red";
+            this.style.border = "2px solid rgb(249,166,179)";
             screen.textContent = `${displaynumber}`;
             const audio = document.querySelector(`audio[data-key="1"]`);
             if (!audio) return;;
