@@ -355,9 +355,9 @@ function checkingkey(event, shiftstatus){
         k = buttons[6];
     }else if(event.keyCode == 106 || shiftstatus && event.keyCode == 56){
         k = buttons[7];
-    }else if(event.keyCode == 107 || shiftstatus && event.keyCode == 61){
+    }else if(event.keyCode == 107 || shiftstatus && (event.keyCode = 187 || event.keyCode == 61)){
         k = buttons[15];
-    }else if(event.keyCode == 173 || event.keyCode == 109){
+    }else if(event.keyCode == 173 || event.keyCode == 109 || event.keyCode == 189){
         k = buttons[11];
     }else if(event.keyCode == 111 || event.keyCode == 191){
         k = buttons[3];
