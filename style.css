@@ -184,6 +184,7 @@ body{
     background:#999;
     border-radius:10px;
     border: 0px;
+    outline:none; 
 }
 
 
