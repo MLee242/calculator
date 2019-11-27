@@ -8,12 +8,14 @@ const formuladisplay = container.getElementsByClassName("displayformula")[0];
 
 
 let displaynumber = 0;
-let digit = 0;
+let prev = undefined;
+let curr = 0;
 let powerOn = false;
 let operator = "";
-let stack = [];
-let decimaladd = false;
 let mode = false;
+let disable = false;
+let decimaldigit = false;
+
 function add(x, y){
     return x + y;
 }
@@ -26,9 +28,19 @@ function multiply(x,y){
 }
 function divide(x, y){
     if(y == 0){
-        return "NAN"
+        disable = true;
+        return "NAN: Press AC"
+        
     }
     return x/y;
+}
+function mod(x, y){
+    if(y == 0){
+        disable = true;
+        return "NAN: Press AC";
+        
+    }
+    return x%y;
 }
 
 function operate(x,y,op){
@@ -41,6 +53,8 @@ function operate(x,y,op){
         return multiply(x,y);
     }else if(op == '/'){
         return divide(x,y);
+    }else if(op == '%'){
+        return mod(x,y);
     }
 }
 
@@ -62,21 +76,23 @@ function checkstart(){
             powerlight.style.backgroundColor='#b98181';
             this.style.border = "0px";
             screen.textContent = "";
-            formuladisplay.textContent ="";
+            formuladisplay.textContent =" ";
+            prev = curr = undefined;
             displaynumber = 0;
         }
     }
-    if(powerOn){
-        
-        
+    if(powerOn && !disable){
         if(this.id == 1){
-            displaynumber = 0;
-            operator = "";
-            mode = 0;
-            stack = [];
-            formuladisplay.textContent ="";
+            settodefault();
         }else if(this.id == 2){
-            displaynumber *= -1;
+            if(curr != undefined){
+                curr *= -1;
+                displaynumber = curr;
+            }else if(prev != undefined){
+                prev *= -1;
+                displaynumber = prev;
+            }
+            
         }else if(this.id == 3){
             setoperator('%');
         }else if(this.id == 4){
@@ -108,78 +124,186 @@ function checkstart(){
         }else if(this.id == 17){
             updatenumber(0);
         }else if(this.id == 18){
-            decimaladd = true;
+            
+            if(!decimaldigit){
+                if(curr == undefined){
+                    curr = 0;
+                }
+                curr = curr + ".";
+                displaynumber = curr;
+                decimaldigit = true;
+            }
+            
+
         }else if(this.id == 19){
+            formuladisplay.textContent = " ";
             evaluate();
+        }else if(this.id == 20){
+            backspace();
         }
 
         updateDisplay();
+    }else if(powerOn && disable){
+        if(this.id == 1){
+            settodefault();
+            disable = false;
+            updateDisplay();
+        }
+        
     }
 
 
 
+}
+
+function settodefault(){
+    prev = undefined;
+    curr = undefined
+    displaynumber = 0;
+    operator = "";
+    mode = false;
+    decimaldigit = false;
+    formuladisplay.textContent =" ";
 }
 function evaluate(){
     
     if(operator == ""){
+        prev = curr = displaynumber;
+        curr = undefined;
         return;
     }
-
-    if(stack.length == 1){
-
-        displaynumber = operate(stack.pop(), displaynumber, operator);
-
-        stack.push(displaynumber);
-        
-        operator = "";
-        formuladisplay.textContent = "";
+    if(curr == undefined){
+        curr = prev;
     }
+
+    
+    prev = parseFloat(prev);
+    curr = parseFloat(curr);
+
+    prev = operate(prev, curr, operator);
+    displaynumber = prev;
+    curr = undefined;
+    operator = "";
+    
+    mode = false;
+    decimaldigit = false;
 }
 
 function setoperator(op){
-    mode = !mode;
 
-
-    formuladisplay.textContent += ` ${displaynumber}`;
-    formuladisplay.textContent += " " + op;
-    let str = formuladisplay.textContent
-    if(str.length > 43){
-        let dif = str.length - 43;
-        formuladisplay.textContent = str.substring(dif, str.ength)
-    }
-    if(stack.length == 0){
-        stack.push(displaynumber);
+    
+    if(!mode){
+        mode = true;
+        formuladisplay.textContent += ` ${displaynumber}`;
+        formuladisplay.textContent += ` ${op}`;
+        let str = formuladisplay.textContent
+        if(str.length > 43){
+            let dif = str.length - 43;
+            formuladisplay.textContent = str.substring(dif, str.length)
+        }
         operator = op;
-        displaynumber = 0;
-    }else if(stack.length == 1){
-        displaynumber = operate(stack.pop(), displaynumber,op);
-        stack.push(displaynumber);
-        displaynumber = 0;
+        if(prev != undefined && curr != undefined){
+            evaluate();
+            operator = op;
+        }else if(prev == undefined && curr == undefined){
+            prev = displaynumber = 0;
+        }else if(prev == undefined && curr != undefined){
+            prev = curr = displaynumber;
+            decimaldigit = false;
+            curr = undefined;
+        }
+    
+
+    }else{
+        let str = formuladisplay.textContent;
+        str = str.substring(0, str.length-2);
+        formuladisplay.textContent = str + " " +  op;
         operator = op;
+        decimaldigit = false;
     }
+    
 
+}
 
-};
 function updatenumber(n){
 
+    
 
 
-
-
-    if(displaynumber != 0){
-        displaynumber *= 10;
+    if(mode){
+        mode = false;
     }
-    displaynumber += n;
+    if(curr == undefined){
+        curr = 0;
+    }
+    if(curr.toString().length > 14){
+        return;   
+    }
+
+
+
+    if(!decimaldigit && curr != 0){
+        curr *= 10;
+        if(curr < 0){
+            curr -= n;
+        }else{
+            curr += n;
+        }
+    }else{
+        curr += n;
+    }
+    displaynumber = curr;
+
+}
+function backspace(){
+    if(curr == undefined){
+        return;
+    }
+   
+    if(decimaldigit){
+        curr = curr.substring(0,curr.length-1);
+        console.log(curr);
+        
+        if(curr.indexOf('.') == -1){
+            decimaldigit = false;
+            console.log("hi");
+        }
+
+    }else{
+        curr = Math.floor(curr / 10);
+    }
+    displaynumber = curr;
+
+
 
 }
 
 function updateDisplay(){
 
+
+    
     screen.textContent = `${displaynumber}`;
 
 
 }
 
+function changebg(){
+    
+
+    this.style.backgroundColor = "gold";
+}
+function backbg(){
+    if(this.id < 20){
+        this.style.backgroundColor = "transparent";
+    }else{
+        this.style.backgroundColor = "#999";
+    }
+    
+}
+
+
 buttons.forEach(button =>{ 
     button.addEventListener('click', checkstart);
+    button.addEventListener('mouseover', changebg);
+    button.addEventListener('mouseout', backbg);
 });
