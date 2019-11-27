@@ -228,7 +228,9 @@ function setoperator(op){
 function updatenumber(n){
 
     
-
+    if(operator == ""){
+        prev = undefined;
+    }
 
     if(mode){
         mode = false;
