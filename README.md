@@ -1,3 +1,5 @@
+# Calculator
+
 An online calculator that performs all the basic functionalities of a normal calculator on your phone.
 
 User can input two ways either by clicking on the buttons or typing the numbers.
